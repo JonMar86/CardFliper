@@ -1,46 +1,50 @@
-﻿@using CardFlipperGame.PureCode;
-
-@if (this.TrackedCard != null)
-{
-    <div class="gamecard-box" @onclick="Flip">
-        @if (this.IsHiding)
-        {
-            <div class="gamecard-hidingside gamecard-inner">
-                <span class="gamecard-text">@this.HiddenSide</span>
-            </div>
-        }
-        else
-        {
-            <div class="gamecard-displayingside gamecard-inner">
-                <span class="gamecard-text">@this.DisplayedSide</span>
-            </div>
-        }
-    </div>
-}
+﻿<div class="gamecard-box">
+    @if (this.IsHiding)
+    {
+        <div class="gamecard-hidingside gamecard-inner">
+            <span class="gamecard-text" @onclick="FlipFaceUp">@this.HiddenSide</span>
+        </div>
+    }
+    else
+    {
+        <div class="gamecard-displayingside gamecard-inner">
+            <span class="gamecard-text">@this.DisplayedSide</span>
+        </div>
+    }
+</div>
 
 @code
 {
+    public const string DefaultText = "?";
+
     [Parameter]
-    public Card TrackedCard { get; set; }
+    public bool IsHiding { get; set; } = true;
 
-    public bool IsHiding
+    [Parameter]
+    public string HiddenSide { get; set; } = DefaultText;
+
+    [Parameter]
+    public string DisplayedSide { get; set; } = DefaultText;
+
+    [Parameter]
+    public CardGrid Grid { get; set; }
+
+    public async Task FlipFaceUp()
     {
-        get => this.TrackedCard.IsHiding;
-        set => this.TrackedCard.IsHiding = value;
+        if (!this.Grid.IsWaiting)
+        {
+            this.IsHiding = false;
+            await this.Grid.CheckForMatch(this);
+        }
     }
 
-    public string HiddenSide
+    public void FlipFaceDown()
     {
-        get => this.TrackedCard.HiddenSide;
+        this.IsHiding = true;
     }
 
-    public string DisplayedSide
+    public void FlipFaceDownAsync()
     {
-        get => this.TrackedCard.DisplayedSide;
-    }
-
-    public void Flip()
-    {
-        this.IsHiding = !this.IsHiding;
+        FlipFaceDown();
     }
 }

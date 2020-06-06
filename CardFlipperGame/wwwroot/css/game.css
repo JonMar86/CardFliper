@@ -8,8 +8,7 @@
     margin: 2%;
     padding: 2%;
     position: relative;
-    background-color: lightslategrey;
-    cursor: pointer;
+    background-color: lightslategrey;    
     font-weight: bolder;
 }
 
@@ -28,10 +27,12 @@
 
 .gamecard-hidingside {
     background-color: cadetblue;
+    cursor: pointer;
 }
 
 .gamecard-displayingside {
     background-color: rosybrown;
+    cursor: default;
 }
 
 .gamecard-text {
