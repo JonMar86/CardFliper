@@ -4,6 +4,15 @@
     <h4>Mismatches: @this.Mismatches.ToString()</h4>
 }
 
+@if (this.MatchesLeft == 0)
+{
+    <div class="gamecard-box">
+        <h2>
+            <span class="btn gamecard-text" @onclick="StartNewGame">Start a new game?</span>
+        </h2>
+    </div>
+}
+
 <div style="@this.DynamicCss">
     <div class="game-container container">
         @if (this.GameOn)
@@ -75,6 +84,8 @@
 
     public int Mismatches { get; set; }
 
+    public int MatchesLeft { get; set; } = -1;
+
     public int Seed { get; set; } = 100000;
 
     public async Task CheckForMatch(CardDisplay card)
@@ -89,7 +100,17 @@
         {
             // Match found
             lastCard = null;
-            this.StateText = "You found a match!";
+            this.MatchesLeft--;
+
+            if (this.MatchesLeft > 0)
+            {
+                this.StateText = "You found a match!";
+            }
+            else
+            {
+                this.StateText = "You win!";
+                this.DynamicCss = "background-color: royalblue;";
+            }
         }
         else
         {
@@ -127,7 +148,7 @@
             list.Add(display);
             letter++;
         }
-        
+
         Scramble(list);
 
         int square = (int)Math.Sqrt(list.Count);
@@ -137,6 +158,7 @@
         this.TrackedCards = list;
         this.SelectedMode = pairs;
         this.Mismatches = 0;
+        this.MatchesLeft = pairs / 2;
         this.GameOn = true;
     }
 
@@ -152,5 +174,13 @@
             list[i] = list[randoIndex];
             list[randoIndex] = temp;
         }
+    }
+
+    private void StartNewGame()
+    {
+        this.MatchesLeft = -1;
+        this.DynamicCss = string.Empty;
+        this.StateText = "Select pairs to match";
+        this.GameOn = false;
     }
 }
