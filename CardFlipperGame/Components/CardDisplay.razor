@@ -35,6 +35,7 @@
         {
             this.IsHiding = false;
             await this.Grid.CheckForMatch(this);
+            base.StateHasChanged();
         }
     }
 

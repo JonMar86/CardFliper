@@ -1,11 +1,31 @@
-﻿<div class="game-container container">
-    @for (int r = 0; r < this.RowCount; r++)
+﻿<h3>@this.StateText</h3>
+<div class="game-container container">
+    @if (this.SelectedMode > 0 && this.TrackedCards != null)
+    {
+        @for (int r = 0; r < this.RowCount; r++)
+        {
+            <div class="row">
+                @for (int c = 0; c < this.ColumnCount; c++)
+                {
+                    <div class="@this.SimpleGridColClass">
+                        <CardDisplay DisplayedSide="@DisplayIndex(r, c)" Grid="@this" />
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
     {
         <div class="row">
-            @for (int c = 0; c < this.ColumnCount; c++)
+            @for (int i = MinCardPairs; i <= MaxCardPairs; i++)
             {
-                <div class="@this.SimpleGridColClass">
-                    <CardDisplay DisplayedSide="@this.TrackedCards[GridToIndex(r,c)]" Grid="@this" />
+                var pairs = i * i;
+                <div class="col-3">
+                    <div class="gamecard-box">
+                        <div class="gamecard-hidingside gamecard-inner">                            
+                            <span class="btn gamecard-text" @onclick="e => GeneratedItemsToDisplay(pairs)">@pairs</span>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
@@ -14,33 +34,33 @@
 
 @code
 {
-    public const int SecondsToWaitOnMismatch = 5;
+    public const int MinCardPairs = 2;
+    public const int MaxCardPairs = 9;
+    public const int SecondsToWaitOnMismatch = 4;
 
     private int index = 0;
 
     private CardDisplay lastCard = null;
 
-    public int GridToIndex(int r, int c)
+    public string DisplayIndex(int r, int c)
     {
-        return r * this.RowCount + c;
+        int index = (r * this.RowCount) + c;
+        return this.TrackedCards[index];
     }
 
-    public int RowCount { get; set; } = 4;
+    public int RowCount { get; set; } = -1;
 
-    public int ColumnCount { get; set; } = 4;
+    public int ColumnCount { get; set; } = -1;
 
-    public IList<string> TrackedCards { get; set; } = new List<string>
-    {
-        // Demo list
-        "A", "B", "C", "D",
-        "A", "B", "C", "D",
-        "E", "F", "G", "H",
-        "E", "F", "G", "H",
-    };
+    public int SelectedMode { get; set; } = 0;
+
+    public IList<string> TrackedCards { get; set; }
 
     public string SimpleGridColClass => $"col-{12 / this.ColumnCount}";
 
     public bool IsWaiting { get; private set; } = false;
+
+    public string StateText { get; set; } = "Select pairs to match";
 
     public async Task CheckForMatch(CardDisplay card)
     {
@@ -48,28 +68,50 @@
         {
             // First pick
             lastCard = card;
-            return;
+            this.StateText = "Find the next match";
         }
-
-        if (lastCard == card)
-            return; // Ignore
-
-        if (lastCard.DisplayedSide == card.DisplayedSide)
+        else if (lastCard != card && lastCard.DisplayedSide == card.DisplayedSide)
         {
-            // Match found            
+            // Match found
             lastCard = null;
+            this.StateText = "You found a match!";
         }
         else
         {
             // No match
+            this.StateText = "Sorry - No match";
             this.IsWaiting = true;
             await Task.Delay(SecondsToWaitOnMismatch * 1000);
             card.FlipFaceDown();
             lastCard.FlipFaceDown();
             lastCard = null;
+            this.StateText = "Match pairs!";
         }
 
         this.IsWaiting = false;
         base.StateHasChanged();
+    }
+
+    private void GeneratedItemsToDisplay(int pairs)
+    {
+        var list = new List<string>(pairs);
+
+        char letter = 'A';
+        for (int i = 0; i < pairs; i++)
+        {
+            string display = letter.ToString();
+
+            // Add a pair
+            list.Add(display);
+            list.Add(display);
+
+            letter++;
+        }
+        int square = (int)Math.Sqrt(list.Count);
+
+        this.RowCount = square;
+        this.ColumnCount = square;
+        this.TrackedCards = list;
+        this.SelectedMode = pairs;
     }
 }
