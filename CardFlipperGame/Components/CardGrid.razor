@@ -1,0 +1,46 @@
+﻿@using CardFlipperGame.PureCode;
+
+<div class="game-container container">
+    @for (int r = 0; r < this.RowCount; r++)
+    {
+        <div class="row">
+            @for (int c = 0; c < this.ColumnCount; c++)
+            {
+                <div class="@this.SimpleGridColClass"><CardDisplay TrackedCard="@this.NextCard" /></div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private int index = 0;
+
+    public int RowCount { get; set; } = 4;
+
+    public int ColumnCount { get; set; } = 4;
+
+    public Card NextCard => this.TrackedCards[index++];
+    
+    public IList<Card> TrackedCards { get; set; } = new List<Card>
+    {
+        // Demo list
+        new Card("A"),
+        new Card("A"),
+        new Card("B"),
+        new Card("B"),
+        new Card("C"),
+        new Card("C"),
+        new Card("D"),
+        new Card("D"),
+        new Card("E"),
+        new Card("E"),
+        new Card("F"),
+        new Card("F"),
+        new Card("G"),
+        new Card("G"),
+        new Card("H"),
+        new Card("H"),
+    };
+
+    public string SimpleGridColClass => $"col-{12 / this.ColumnCount}";
+}

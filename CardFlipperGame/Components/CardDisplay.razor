@@ -1,0 +1,46 @@
+﻿@using CardFlipperGame.PureCode;
+
+@if (this.TrackedCard != null)
+{
+    <div class="gamecard-box" @onclick="Flip">
+        @if (this.IsHiding)
+        {
+            <div class="gamecard-hidingside gamecard-inner">
+                <span class="gamecard-text">@this.HiddenSide</span>
+            </div>
+        }
+        else
+        {
+            <div class="gamecard-displayingside gamecard-inner">
+                <span class="gamecard-text">@this.DisplayedSide</span>
+            </div>
+        }
+    </div>
+}
+
+@code
+{
+    [Parameter]
+    public Card TrackedCard { get; set; }
+
+    public bool IsHiding
+    {
+        get => this.TrackedCard.IsHiding;
+        set => this.TrackedCard.IsHiding = value;
+    }
+
+    public string HiddenSide
+    {
+        get => this.TrackedCard.HiddenSide;
+    }
+
+    public string DisplayedSide
+    {
+        get => this.TrackedCard.DisplayedSide;
+    }
+
+    public void Flip()
+    {
+        this.IsHiding = !this.IsHiding;
+    }
+}
