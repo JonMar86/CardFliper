@@ -1,4 +1,4 @@
-﻿<div class="gamecard-box">
+﻿<div class="gamecard-box" @onclick="Flip">
     @if (this.IsHiding)
     {
         <div class="gamecard-hidingside gamecard-inner">
@@ -23,4 +23,9 @@
 
     [Parameter]
     public string DisplayedSide { get; set; } = "?";
+
+    public void Flip()
+    {
+        this.IsHiding = !this.IsHiding;
+    }
 }

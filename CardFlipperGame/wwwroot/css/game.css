@@ -12,6 +12,8 @@
     width: 50%;
     text-align: center;
     background-color: lightslategrey;
+    cursor: pointer;
+    font-weight: bolder;
 }
 
     .gamecard-box::after {
@@ -22,9 +24,9 @@
 
 .gamecard-inner {
     position: absolute;
-    margin: 1%;
-    width: 98%;
-    height: 98%;
+    margin: 2%;
+    width: 92%;
+    height: 92%;
     padding-top: 40%;
 }
 
