@@ -1,4 +1,10 @@
-﻿<h3>@this.StateText</h3>
+﻿@using CardFlipperGame.Saving;
+@using BlazorInputFile;
+@using BlazorDownloadFile;
+@using Newtonsoft.Json;
+@inject IJSRuntime JSRuntime
+
+<h3>@this.StateText</h3>
 @if (this.GameOn && this.MatchesLeft > 0)
 {
     <h4>Mismatches: @this.Mismatches.ToString()</h4>
@@ -6,7 +12,7 @@
 
 @if (this.MatchesLeft == 0)
 {
-    <div class="game-score" >
+    <div class="game-score">
         <div><h3>Matched @this.SelectedMode Pairs with @this.Mismatches mismatched</h3></div>
         <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
     </div>
@@ -46,14 +52,16 @@
         }
     </div>
 </div>
+@if (this.GameOn && this.MatchesLeft > 0)
+{
+    <button class="btn newgamebtn" @onclick="SaveGameDownload">Save game</button>
+}
 
 @code
 {
     public const int MinCardPairs = 2;
     public const int MaxCardPairs = 9;
     public const int SecondsToWaitOnMismatch = 3;
-
-    private int index = 0;
 
     private CardDisplay lastCard = null;
 
@@ -87,6 +95,11 @@
 
     public int Seed { get; set; } = 100000;
 
+    public List<string> FoundMatches { get; } = new List<string>();
+
+    [Inject]
+    IBlazorDownloadFileService BlazorDownloadFileService { get; set; }
+
     public async Task CheckForMatch(CardDisplay card)
     {
         if (lastCard == null)
@@ -100,6 +113,7 @@
             // Match found
             lastCard = null;
             this.MatchesLeft--;
+            this.FoundMatches.Add(card.DisplayedSide);
 
             if (this.MatchesLeft > 0)
             {
@@ -177,9 +191,24 @@
 
     private void StartNewGame()
     {
+        this.Seed++;
+        this.FoundMatches.Clear();
         this.MatchesLeft = -1;
         this.DynamicCss = string.Empty;
         this.StateText = "Select pairs to match";
         this.GameOn = false;
+    }
+
+    private async Task SaveGameDownload()
+    {
+        var state = new GameState
+        {
+            Seed = this.Seed,
+            MatchesFound = this.FoundMatches.ToArray()
+        };
+
+        string fileContent = JsonConvert.SerializeObject(state);
+
+        await BlazorDownloadFileService.DownloadFileFromText("cardflipper.json", fileContent, "json");
     }
 }

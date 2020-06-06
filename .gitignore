@@ -1,10 +1,12 @@
 bin/
 .vs/
 obj/
+packages
 
 /bin/
 /.vs/
 /obj/
+/packages/
 
 *.user
 /CardFlipperGame/bin
