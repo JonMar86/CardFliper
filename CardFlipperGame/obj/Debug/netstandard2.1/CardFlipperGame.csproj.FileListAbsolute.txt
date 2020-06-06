@@ -1,4 +1,0 @@
-D:\Projects\Git\CardFliper\CardFlipperGame\bin\Debug\netstandard2.1\wwwroot\_framework\wasm\dotnet.wasm
-D:\Projects\Git\CardFliper\CardFlipperGame\bin\Debug\netstandard2.1\wwwroot\_framework\wasm\dotnet.wasm.gz
-D:\Projects\Git\CardFliper\CardFlipperGame\obj\Debug\netstandard2.1\compressed\_framework\_bin\System.Runtime.Serialization.dll.gz
-D:\Projects\Git\CardFliper\CardFlipperGame\obj\Debug\netstandard2.1\compressed\_framework\wasm\dotnet.wasm.gz
