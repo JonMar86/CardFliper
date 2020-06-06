@@ -43,7 +43,7 @@
 {
     public const int MinCardPairs = 2;
     public const int MaxCardPairs = 9;
-    public const int SecondsToWaitOnMismatch = 4;
+    public const int SecondsToWaitOnMismatch = 3;
 
     private int index = 0;
 
@@ -74,6 +74,8 @@
     public bool GameOn { get; set; } = false;
 
     public int Mismatches { get; set; }
+
+    public int Seed { get; set; } = 100000;
 
     public async Task CheckForMatch(CardDisplay card)
     {
@@ -123,9 +125,11 @@
             // Add a pair
             list.Add(display);
             list.Add(display);
-
             letter++;
         }
+        
+        Scramble(list);
+
         int square = (int)Math.Sqrt(list.Count);
 
         this.RowCount = square;
@@ -134,5 +138,19 @@
         this.SelectedMode = pairs;
         this.Mismatches = 0;
         this.GameOn = true;
+    }
+
+    private void Scramble(List<string> list)
+    {
+        var rng = new Random(this.Seed);
+
+        int lastIndex = list.Count - 1;
+        for (int i = 0; i < list.Count; i++)
+        {
+            int randoIndex = rng.Next(0, lastIndex);
+            string temp = list[i];
+            list[i] = list[randoIndex];
+            list[randoIndex] = temp;
+        }
     }
 }
