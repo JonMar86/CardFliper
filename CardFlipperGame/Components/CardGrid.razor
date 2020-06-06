@@ -1,35 +1,42 @@
 ﻿<h3>@this.StateText</h3>
-<div class="game-container container">
-    @if (this.SelectedMode > 0 && this.TrackedCards != null)
-    {
-        @for (int r = 0; r < this.RowCount; r++)
+@if (this.GameOn)
+{
+    <h4>Mismatches: @this.Mismatches.ToString()</h4>
+}
+
+<div style="@this.DynamicCss">
+    <div class="game-container container">
+        @if (this.GameOn)
+        {
+            @for (int r = 0; r < this.RowCount; r++)
+            {
+                <div class="row">
+                    @for (int c = 0; c < this.ColumnCount; c++)
+                    {
+                        <div class="@this.SimpleGridColClass">
+                            <CardDisplay DisplayedSide="@DisplayIndex(r, c)" Grid="@this" />
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
         {
             <div class="row">
-                @for (int c = 0; c < this.ColumnCount; c++)
+                @for (int i = MinCardPairs; i <= MaxCardPairs; i++)
                 {
-                    <div class="@this.SimpleGridColClass">
-                        <CardDisplay DisplayedSide="@DisplayIndex(r, c)" Grid="@this" />
+                    var pairs = i * i;
+                    <div class="col-3">
+                        <div class="gamecard-box">
+                            <div class="gamecard-hidingside gamecard-inner">
+                                <span class="btn gamecard-text" @onclick="e => GeneratedItemsToDisplay(pairs)">@pairs</span>
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
         }
-    }
-    else
-    {
-        <div class="row">
-            @for (int i = MinCardPairs; i <= MaxCardPairs; i++)
-            {
-                var pairs = i * i;
-                <div class="col-3">
-                    <div class="gamecard-box">
-                        <div class="gamecard-hidingside gamecard-inner">                            
-                            <span class="btn gamecard-text" @onclick="e => GeneratedItemsToDisplay(pairs)">@pairs</span>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
+    </div>
 </div>
 
 @code
@@ -60,7 +67,13 @@
 
     public bool IsWaiting { get; private set; } = false;
 
+    public string DynamicCss { get; set; } = string.Empty;
+
     public string StateText { get; set; } = "Select pairs to match";
+
+    public bool GameOn { get; set; } = false;
+
+    public int Mismatches { get; set; }
 
     public async Task CheckForMatch(CardDisplay card)
     {
@@ -80,12 +93,18 @@
         {
             // No match
             this.StateText = "Sorry - No match";
+            this.Mismatches++;
             this.IsWaiting = true;
+            this.DynamicCss = "background-color: orangered;";
+            base.StateHasChanged();
+
+            // Intentionally not waiting
             await Task.Delay(SecondsToWaitOnMismatch * 1000);
-            card.FlipFaceDown();
             lastCard.FlipFaceDown();
+            card.FlipFaceDown();
             lastCard = null;
             this.StateText = "Match pairs!";
+            this.DynamicCss = string.Empty;
         }
 
         this.IsWaiting = false;
@@ -113,5 +132,7 @@
         this.ColumnCount = square;
         this.TrackedCards = list;
         this.SelectedMode = pairs;
+        this.Mismatches = 0;
+        this.GameOn = true;
     }
 }
