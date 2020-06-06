@@ -8,7 +8,7 @@
     margin: 2%;
     padding: 2%;
     position: relative;
-    background-color: lightslategrey;    
+    background-color: lightslategrey;
     font-weight: bolder;
 }
 
@@ -42,4 +42,17 @@
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
+}
+
+.game-score {
+    position: relative;
+    background-color: aliceblue;
+    text-align: center;
+    border: 10px solid #3c3c3c;
+}
+
+.newgamebtn {
+    background-color: cadetblue;
+    padding: 5%;
+    border: 10px solid #3c3c3c;
 }

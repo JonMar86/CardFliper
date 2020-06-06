@@ -1,15 +1,14 @@
 ﻿<h3>@this.StateText</h3>
-@if (this.GameOn)
+@if (this.GameOn && this.MatchesLeft > 0)
 {
     <h4>Mismatches: @this.Mismatches.ToString()</h4>
 }
 
 @if (this.MatchesLeft == 0)
 {
-    <div class="gamecard-box">
-        <h2>
-            <span class="btn gamecard-text" @onclick="StartNewGame">Start a new game?</span>
-        </h2>
+    <div class="game-score" >
+        <div><h3>Matched @this.SelectedMode Pairs with @this.Mismatches mismatched</h3></div>
+        <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
     </div>
 }
 
