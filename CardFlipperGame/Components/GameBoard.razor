@@ -1,0 +1,35 @@
+﻿<div class="game-container container">
+    @for (int r = 0; r < this.RowCount; r++)
+    {
+        <div class="row">
+            @for (int c = 0; c < this.ColumnCount; c++)
+            {
+                int index = (r * this.RowCount) + c;
+                <div class="@this.SimpleGridColClass">
+                    <CardDisplay DisplayedSide="@this.DisplayList[index]"
+                                 Index="@index"
+                                 IsFaceUp="@this.Grid.IsMatched(index)"
+                                 AllowedToFlipUp="this.Grid.IsAllowedToFlipCards"
+                                 OnFlippedUp="this.Grid.CheckForMatch" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public int RowCount { get; set; }
+
+    [Parameter]
+    public int ColumnCount { get; set; }
+
+    [Parameter]
+    public CardGrid Grid { get; set; }
+
+    [Parameter]
+    public IList<string> DisplayList { get; set; }
+
+    private string SimpleGridColClass => $"col-{12 / this.ColumnCount}";
+}

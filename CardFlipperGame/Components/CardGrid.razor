@@ -1,5 +1,4 @@
-﻿
-@inject IJSRuntime JSRuntime
+﻿@inject IJSRuntime JSRuntime
 
 <h3>@this.StateText</h3>
 @if (this.GameOn && this.MatchesLeft > 0)
@@ -8,34 +7,27 @@
 }
 
 <div style="@this.DynamicCss">
-    <div class="game-container container">
-        @if (this.GameOn)
-        {
-            @for (int r = 0; r < this.RowCount; r++)
-            {
-                <div class="row">
-                    @for (int c = 0; c < this.ColumnCount; c++)
-                    {
-                        int index = (r * this.RowCount) + c;
-                        <div class="@this.SimpleGridColClass">
-                            <CardDisplay DisplayedSide="@this.TrackedCards[index]" Grid="@this" Index="@index" IsHiding="@(!IsMatched(index))" />
-                        </div>
-                    }
-                </div>
-            }
-        }
-        else
-        {
-            <GameSelector OnSelectionMade="GenerateCards" />
-        }
-    </div>
+
+    @if (this.GameOn)
+    {
+        <GameBoard ColumnCount="this.ColumnCount" RowCount="this.RowCount" DisplayList="this.TrackedCards" Grid="this" />
+    }
+    else
+    {
+        <GameSelector OnSelectionMade="GenerateCards" />
+    }
+
 </div>
 
 @if (this.GameOn)
 {
     <div class="game-score">
-        <div><h3>Matched @this.CurrentGame.Pairs Pairs with @this.CurrentGame.Mismatches mismatched</h3></div>
-        <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
+        <div>
+            <h3>Matched @this.CurrentGame.Pairs Pairs with @this.CurrentGame.Mismatches mismatched</h3>
+        </div>
+
+        <GameRestarter OnRestarting="StartNewGame" />
+
         @if (this.GameOn && this.MatchesLeft > 0)
         {
             <GameSaver CurrentGameState="this.CurrentGame" />
@@ -76,28 +68,31 @@ else
 
     public List<int> FoundMatches { get; } = new List<int>();
 
-
-
     public bool IsMatched(int index)
     {
         return this.FoundMatches.Contains(index);
     }
 
+    public bool IsAllowedToFlipCards()
+    {
+        return !this.IsWaiting;
+    }
+
     public async Task CheckForMatch(CardDisplay card)
     {
+        this.FoundMatches.Add(card.Index);
+
         if (lastCard == null)
         {
             // First pick
             lastCard = card;
             this.StateText = "Find the next match";
-            this.FoundMatches.Add(card.Index);
         }
         else if (lastCard != card && lastCard.DisplayedSide == card.DisplayedSide)
         {
             // Match found
             lastCard = null;
             this.MatchesLeft--;
-            this.FoundMatches.Add(card.Index);
 
             if (this.MatchesLeft > 0)
             {
@@ -114,11 +109,10 @@ else
             // No match
             this.StateText = "Sorry - No match";
             this.CurrentGame.Mismatches++;
-            this.IsWaiting = true;
             this.DynamicCss = "background-color: orangered;";
             base.StateHasChanged();
 
-            // Intentionally not waiting
+            this.IsWaiting = true;
             await Task.Delay(SecondsToWaitOnMismatch * 1000);
             lastCard.FlipFaceDown();
             card.FlipFaceDown();

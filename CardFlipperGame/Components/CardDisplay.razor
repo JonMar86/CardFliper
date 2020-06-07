@@ -1,14 +1,14 @@
 ﻿<div class="gamecard-box">
-    @if (this.IsHiding)
+    @if (this.IsFaceUp)
     {
-        <div class="gamecard-hidingside gamecard-inner">
-            <span class="gamecard-text" @onclick="FlipFaceUp">@this.HiddenSide</span>
+        <div class="gamecard-displayingside gamecard-inner">
+            <span class="gamecard-text">@this.DisplayedSide</span>
         </div>
     }
     else
     {
-        <div class="gamecard-displayingside gamecard-inner">
-            <span class="gamecard-text">@this.DisplayedSide</span>
+        <div class="gamecard-hidingside gamecard-inner">
+            <span class="gamecard-text" @onclick="FlipFaceUp">@this.HiddenSide</span>
         </div>
     }
 </div>
@@ -18,7 +18,7 @@
     public const string DefaultText = "?";
 
     [Parameter]
-    public bool IsHiding { get; set; } = true;
+    public bool IsFaceUp { get; set; }
 
     [Parameter]
     public string HiddenSide { get; set; } = DefaultText;
@@ -27,23 +27,26 @@
     public string DisplayedSide { get; set; } = DefaultText;
 
     [Parameter]
-    public CardGrid Grid { get; set; }
-
-    [Parameter]
     public int Index { get; set; }
 
-    public async Task FlipFaceUp()
+    [Parameter]
+    public Func<bool> AllowedToFlipUp { get; set; }
+
+    [Parameter]
+    public Func<CardDisplay, Task> OnFlippedUp { get; set; }
+
+    public void FlipFaceUp()
     {
-        if (!this.Grid.IsWaiting)
+        if (this.AllowedToFlipUp?.Invoke() == true)
         {
-            this.IsHiding = false;
+            this.IsFaceUp = true;
             base.StateHasChanged();
-            await this.Grid.CheckForMatch(this);
+            this.OnFlippedUp?.Invoke(this);
         }
     }
 
     public void FlipFaceDown()
     {
-        this.IsHiding = true;
+        this.IsFaceUp = false;
     }
 }

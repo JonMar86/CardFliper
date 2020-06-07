@@ -1,0 +1,9 @@
+﻿<div>
+    <button @onclick="OnRestarting" class="btn newgamebtn"><h2>Start a new game?</h2></button>
+</div>
+
+@code {
+
+    [Parameter]
+    public Action OnRestarting { get; set; }
+}
