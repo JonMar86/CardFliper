@@ -27,8 +27,9 @@
                 <div class="row">
                     @for (int c = 0; c < this.ColumnCount; c++)
                     {
+                        int index = (r * this.RowCount) + c;
                         <div class="@this.SimpleGridColClass">
-                            <CardDisplay DisplayedSide="@DisplayIndex(r, c)" Grid="@this" />
+                            <CardDisplay DisplayedSide="@this.TrackedCards[index]" Grid="@this" Index="@index" IsHiding="@(!IsMatched(index))"/>
                         </div>
                     }
                 </div>
@@ -62,7 +63,9 @@
 else
 {
     <div>
-
+        <h3>Contiue previous game</h3>
+        <input placeholder="JSON Text Here" @bind="priorGame" />
+        <button @onclick="ReadText">Create</button>
     </div>
 }
 
@@ -73,12 +76,7 @@ else
     public const int SecondsToWaitOnMismatch = 3;
 
     private CardDisplay lastCard = null;
-
-    public string DisplayIndex(int r, int c)
-    {
-        int index = (r * this.RowCount) + c;
-        return this.TrackedCards[index];
-    }
+    private string priorGame = null;
 
     public int RowCount { get; set; } = -1;
 
@@ -104,10 +102,15 @@ else
 
     public int Seed { get; set; } = 100000;
 
-    public List<string> FoundMatches { get; } = new List<string>();
+    public List<int> FoundMatches { get; } = new List<int>();
 
     [Inject]
     IBlazorDownloadFileService BlazorDownloadFileService { get; set; }
+
+    public bool IsMatched(int index)
+    {
+        return this.FoundMatches.Contains(index);
+    }
 
     public async Task CheckForMatch(CardDisplay card)
     {
@@ -116,13 +119,14 @@ else
             // First pick
             lastCard = card;
             this.StateText = "Find the next match";
+            this.FoundMatches.Add(card.Index);
         }
         else if (lastCard != card && lastCard.DisplayedSide == card.DisplayedSide)
         {
             // Match found
             lastCard = null;
             this.MatchesLeft--;
-            this.FoundMatches.Add(card.DisplayedSide);
+            this.FoundMatches.Add(card.Index);
 
             if (this.MatchesLeft > 0)
             {
@@ -147,6 +151,8 @@ else
             await Task.Delay(SecondsToWaitOnMismatch * 1000);
             lastCard.FlipFaceDown();
             card.FlipFaceDown();
+            this.FoundMatches.Remove(card.Index);
+            this.FoundMatches.Remove(lastCard.Index);
             lastCard = null;
             this.StateText = "Match pairs!";
             this.DynamicCss = string.Empty;
@@ -221,6 +227,18 @@ else
 
         string fileContent = JsonConvert.SerializeObject(state);
 
-        await BlazorDownloadFileService.DownloadFileFromText("cardflipper.json", fileContent, "json");
+        await BlazorDownloadFileService.DownloadFileFromText("cardflipper.txt", fileContent, "json");
+    }
+
+    private void ReadText()
+    {
+        if (!string.IsNullOrEmpty(priorGame))
+        {
+            GameState state = JsonConvert.DeserializeObject<GameState>(priorGame);
+            this.Seed = state.Seed;
+            GeneratedItemsToDisplay(state.Pairs);
+            this.FoundMatches.AddRange(state.MatchesFound);
+            this.Mismatches = state.Mismatches;
+        }
     }
 }

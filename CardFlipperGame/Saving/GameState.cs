@@ -12,7 +12,7 @@ namespace CardFlipperGame.Saving
         public int Pairs { get; set; }
 
         [JsonProperty]
-        public string[] MatchesFound { get; set; }
+        public int[] MatchesFound { get; set; }
 
         [JsonProperty]
         public int Mismatches { get; set; }
