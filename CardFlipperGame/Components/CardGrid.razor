@@ -1,7 +1,7 @@
-﻿@using CardFlipperGame.Saving;
-@using BlazorInputFile;
-@using BlazorDownloadFile;
-@using Newtonsoft.Json;
+﻿@using System.IO
+@using CardFlipperGame.Saving
+@using BlazorDownloadFile
+@using Newtonsoft.Json
 @inject IJSRuntime JSRuntime
 
 <h3>@this.StateText</h3>
@@ -13,7 +13,7 @@
 @if (this.MatchesLeft == 0)
 {
     <div class="game-score">
-        <div><h3>Matched @this.SelectedMode Pairs with @this.Mismatches mismatched</h3></div>
+        <div><h3>Matched @this.PairsToMatch Pairs with @this.Mismatches mismatched</h3></div>
         <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
     </div>
 }
@@ -43,7 +43,7 @@
                     <div class="col-3">
                         <div class="gamecard-box">
                             <div class="gamecard-hidingside gamecard-inner">
-                                <span class="btn gamecard-text" @onclick="e => GeneratedItemsToDisplay(pairs)">@pairs</span>
+                                <span class="btn gamecard-text" @onclick="e => GeneratedItemsToDisplay(pairs)">@i.ToString()</span>
                             </div>
                         </div>
                     </div>
@@ -52,9 +52,18 @@
         }
     </div>
 </div>
+
 @if (this.GameOn && this.MatchesLeft > 0)
 {
-    <button class="btn newgamebtn" @onclick="SaveGameDownload">Save game</button>
+    <div>
+        <button class="btn newgamebtn" @onclick="SaveGameDownload">Save game</button>
+    </div>
+}
+else
+{
+    <div>
+
+    </div>
 }
 
 @code
@@ -75,7 +84,7 @@
 
     public int ColumnCount { get; set; } = -1;
 
-    public int SelectedMode { get; set; } = 0;
+    public int PairsToMatch { get; set; } = 0;
 
     public IList<string> TrackedCards { get; set; }
 
@@ -89,7 +98,7 @@
 
     public bool GameOn { get; set; } = false;
 
-    public int Mismatches { get; set; }
+    public int Mismatches { get; set; } = 0;
 
     public int MatchesLeft { get; set; } = -1;
 
@@ -169,8 +178,8 @@
         this.RowCount = square;
         this.ColumnCount = square;
         this.TrackedCards = list;
-        this.SelectedMode = pairs;
-        this.Mismatches = 0;
+        this.PairsToMatch = pairs;
+
         this.MatchesLeft = pairs / 2;
         this.GameOn = true;
     }
@@ -192,6 +201,7 @@
     private void StartNewGame()
     {
         this.Seed++;
+        this.Mismatches = 0;
         this.FoundMatches.Clear();
         this.MatchesLeft = -1;
         this.DynamicCss = string.Empty;
@@ -204,6 +214,8 @@
         var state = new GameState
         {
             Seed = this.Seed,
+            Pairs = this.PairsToMatch,
+            Mismatches = this.Mismatches,
             MatchesFound = this.FoundMatches.ToArray()
         };
 
