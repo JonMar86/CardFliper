@@ -1,0 +1,24 @@
+﻿<div class="game-container container">
+    <div class="row">
+        @for (int i = MinCardPairs; i <= MaxCardPairs; i++)
+        {
+            var pairs = i * i;
+            <div class="col-3">
+                <div class="gamecard-box">
+                    <div class="gamecard-hidingside gamecard-inner">
+                        <span class="btn gamecard-text" @onclick="() => OnSelectionMade?.Invoke(pairs)">@i.ToString()</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+
+    public const int MinCardPairs = 2;
+    public const int MaxCardPairs = 9;
+
+    [Parameter]
+    public Action<int> OnSelectionMade { get; set; }
+}

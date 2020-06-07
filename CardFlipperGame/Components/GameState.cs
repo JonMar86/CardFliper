@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace CardFlipperGame.Saving
+namespace CardFlipperGame
 {
     [JsonObject]
     public class GameState

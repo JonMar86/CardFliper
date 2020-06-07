@@ -1,0 +1,23 @@
+﻿@using Newtonsoft.Json
+@inject IJSRuntime JSRuntime
+
+<div>
+    <input placeholder="JSON Text Here" @bind="priorGame" />
+    <button @onclick="ReadText"><h3>Continue previous game</h3></button>
+</div>
+
+@code {
+    private string priorGame;
+
+    [Parameter]
+    public Action<GameState> OnGameLoaded { get; set; }
+
+    private void ReadText()
+    {
+        if (!string.IsNullOrEmpty(priorGame))
+        {
+            GameState state = JsonConvert.DeserializeObject<GameState>(priorGame);
+            this.OnGameLoaded?.Invoke(state);
+        }
+    }
+}

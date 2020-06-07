@@ -1,13 +1,10 @@
-﻿@using System.IO
-@using CardFlipperGame.Saving
-@using BlazorDownloadFile
-@using Newtonsoft.Json
+﻿
 @inject IJSRuntime JSRuntime
 
 <h3>@this.StateText</h3>
 @if (this.GameOn && this.MatchesLeft > 0)
 {
-    <h4>Mismatches: @this.Mismatches.ToString()</h4>
+    <h4>Mismatches: @this.CurrentGame.Mismatches</h4>
 }
 
 <div style="@this.DynamicCss">
@@ -29,19 +26,7 @@
         }
         else
         {
-            <div class="row">
-                @for (int i = MinCardPairs; i <= MaxCardPairs; i++)
-                {
-                    var pairs = i * i;
-                    <div class="col-3">
-                        <div class="gamecard-box">
-                            <div class="gamecard-hidingside gamecard-inner">
-                                <span class="btn gamecard-text" @onclick="e => GeneratedItemsToDisplay(pairs)">@i.ToString()</span>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
+            <GameSelector OnSelectionMade="GenerateCards" />
         }
     </div>
 </div>
@@ -49,27 +34,21 @@
 @if (this.GameOn)
 {
     <div class="game-score">
-        <div><h3>Matched @this.PairsToMatch Pairs with @this.Mismatches mismatched</h3></div>
+        <div><h3>Matched @this.CurrentGame.Pairs Pairs with @this.CurrentGame.Mismatches mismatched</h3></div>
         <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
         @if (this.GameOn && this.MatchesLeft > 0)
         {
-            <button class="btn newgamebtn" @onclick="SaveGameDownload"><h2>Save game</h2></button>
+            <GameSaver CurrentGameState="this.CurrentGame" />
         }
     </div>
 }
 else
 {
-    <div>
-        <h3>Continue previous game</h3>
-        <input placeholder="JSON Text Here" @bind="priorGame" />
-        <button @onclick="ReadText">Create</button>
-    </div>
+    <GameLoader OnGameLoaded="LoadPriorGame" />
 }
 
 @code
 {
-    public const int MinCardPairs = 2;
-    public const int MaxCardPairs = 9;
     public const int SecondsToWaitOnMismatch = 3;
 
     private CardDisplay lastCard = null;
@@ -79,7 +58,7 @@ else
 
     public int ColumnCount { get; set; } = -1;
 
-    public int PairsToMatch { get; set; } = 0;
+    public GameState CurrentGame { get; set; }
 
     public IList<string> TrackedCards { get; set; }
 
@@ -93,16 +72,11 @@ else
 
     public bool GameOn { get; set; } = false;
 
-    public int Mismatches { get; set; } = 0;
-
     public int MatchesLeft { get; set; } = -1;
-
-    public int Seed { get; set; } = 100000;
 
     public List<int> FoundMatches { get; } = new List<int>();
 
-    [Inject]
-    IBlazorDownloadFileService BlazorDownloadFileService { get; set; }
+
 
     public bool IsMatched(int index)
     {
@@ -139,7 +113,7 @@ else
         {
             // No match
             this.StateText = "Sorry - No match";
-            this.Mismatches++;
+            this.CurrentGame.Mismatches++;
             this.IsWaiting = true;
             this.DynamicCss = "background-color: orangered;";
             base.StateHasChanged();
@@ -159,8 +133,15 @@ else
         base.StateHasChanged();
     }
 
-    private void GeneratedItemsToDisplay(int pairs)
+    private void GenerateCards(int pairs)
     {
+        this.CurrentGame = new GameState
+        {
+            Pairs = pairs,
+            Seed = DateTime.Now.Millisecond,
+
+        };
+
         var list = new List<string>(pairs);
 
         char letter = 'A';
@@ -180,16 +161,17 @@ else
 
         this.RowCount = square;
         this.ColumnCount = square;
+
         this.TrackedCards = list;
-        this.PairsToMatch = pairs;
 
         this.MatchesLeft = pairs / 2;
         this.GameOn = true;
+        base.StateHasChanged();
     }
 
     private void Scramble(List<string> list)
     {
-        var rng = new Random(this.Seed);
+        var rng = new Random(this.CurrentGame.Seed);
 
         int lastIndex = list.Count - 1;
         for (int i = 0; i < list.Count; i++)
@@ -203,8 +185,6 @@ else
 
     private void StartNewGame()
     {
-        this.Seed++;
-        this.Mismatches = 0;
         this.FoundMatches.Clear();
         this.MatchesLeft = -1;
         this.DynamicCss = string.Empty;
@@ -212,30 +192,10 @@ else
         this.GameOn = false;
     }
 
-    private async Task SaveGameDownload()
+    private void LoadPriorGame(GameState state)
     {
-        var state = new GameState
-        {
-            Seed = this.Seed,
-            Pairs = this.PairsToMatch,
-            Mismatches = this.Mismatches,
-            MatchesFound = this.FoundMatches.ToArray()
-        };
-
-        string fileContent = JsonConvert.SerializeObject(state);
-
-        await BlazorDownloadFileService.DownloadFileFromText("cardflipper.txt", fileContent, "json");
-    }
-
-    private void ReadText()
-    {
-        if (!string.IsNullOrEmpty(priorGame))
-        {
-            GameState state = JsonConvert.DeserializeObject<GameState>(priorGame);
-            this.Seed = state.Seed;
-            GeneratedItemsToDisplay(state.Pairs);
-            this.FoundMatches.AddRange(state.MatchesFound);
-            this.Mismatches = state.Mismatches;
-        }
+        this.CurrentGame = state;
+        GenerateCards(state.Pairs);
+        this.FoundMatches.AddRange(state.MatchesFound);
     }
 }
