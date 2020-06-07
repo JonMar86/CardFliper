@@ -10,14 +10,6 @@
     <h4>Mismatches: @this.Mismatches.ToString()</h4>
 }
 
-@if (this.MatchesLeft == 0)
-{
-    <div class="game-score">
-        <div><h3>Matched @this.PairsToMatch Pairs with @this.Mismatches mismatched</h3></div>
-        <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
-    </div>
-}
-
 <div style="@this.DynamicCss">
     <div class="game-container container">
         @if (this.GameOn)
@@ -29,7 +21,7 @@
                     {
                         int index = (r * this.RowCount) + c;
                         <div class="@this.SimpleGridColClass">
-                            <CardDisplay DisplayedSide="@this.TrackedCards[index]" Grid="@this" Index="@index" IsHiding="@(!IsMatched(index))"/>
+                            <CardDisplay DisplayedSide="@this.TrackedCards[index]" Grid="@this" Index="@index" IsHiding="@(!IsMatched(index))" />
                         </div>
                     }
                 </div>
@@ -54,16 +46,21 @@
     </div>
 </div>
 
-@if (this.GameOn && this.MatchesLeft > 0)
+@if (this.GameOn)
 {
-    <div>
-        <button class="btn newgamebtn" @onclick="SaveGameDownload">Save game</button>
+    <div class="game-score">
+        <div><h3>Matched @this.PairsToMatch Pairs with @this.Mismatches mismatched</h3></div>
+        <button @onclick="StartNewGame" class="btn newgamebtn"><h2>Start a new game?</h2></button>
+        @if (this.GameOn && this.MatchesLeft > 0)
+        {
+            <button class="btn newgamebtn" @onclick="SaveGameDownload"><h2>Save game</h2></button>
+        }
     </div>
 }
 else
 {
     <div>
-        <h3>Contiue previous game</h3>
+        <h3>Continue previous game</h3>
         <input placeholder="JSON Text Here" @bind="priorGame" />
         <button @onclick="ReadText">Create</button>
     </div>
