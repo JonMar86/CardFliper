@@ -4,7 +4,31 @@
 @inject GameSaverService SaverService
 
 <h3>HighScores</h3>
+@if (scores != null && scores.Count > 0)
+{
+    foreach (var score in scores)
+    {
+        <div>
+            <span>@score.Key</span> ~ <span>@score.Value</span>
+        </div>
+    }
+}
+else
+{
+    <div>
+        <span>Be the first to score!</span>
+    </div>
+}
 
-@code {
 
+@code
+{
+    private Dictionary<string, string> scores;
+
+    protected override async Task OnInitializedAsync()
+    {
+        scores = await SaverService.GetHighScores();
+
+        await base.OnParametersSetAsync();
+    }
 }

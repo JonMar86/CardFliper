@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CardFlipperServer.Data
@@ -13,5 +12,7 @@ namespace CardFlipperServer.Data
         Task<GameState> RetrieveGameSave(string key);
 
         Task<IList<string>> GetSaveGames();
+
+        Task<Dictionary<string, string>> GetHighScores();
     }
 }

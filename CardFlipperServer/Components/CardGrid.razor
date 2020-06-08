@@ -1,4 +1,5 @@
 ﻿@inject IJSRuntime JSRuntime
+@inject GameSaverService SaverService
 
 <h3>@this.StateText</h3>
 @if (this.GameOn && this.MatchesLeft > 0)
@@ -22,10 +23,6 @@
 @if (this.GameOn)
 {
     <div class="game-score">
-        <div>
-            <h3>Matched @this.CurrentGame.TotalCards cards with @this.CurrentGame.Mismatches mismatched</h3>
-        </div>
-
         <GameRestarter OnRestarting="StartNewGame" />
 
         @if (this.GameOn && this.MatchesLeft > 0)
@@ -103,6 +100,7 @@ else
             {
                 this.StateText = "You win!";
                 this.DynamicCss = "background-color: royalblue;";
+                await SaverService.StoreHighScore(DateTime.Now.ToString(), $"Matched {this.CurrentGame.TotalCards} with {this.CurrentGame.Mismatches} mismatch{(this.CurrentGame.Mismatches != 1 ? "es" : "")} ");
             }
         }
         else
@@ -161,7 +159,7 @@ else
 
         this.TrackedCards = list;
 
-        this.MatchesLeft = cards;
+        this.MatchesLeft = cards / 2;
         this.GameOn = true;
         base.StateHasChanged();
     }

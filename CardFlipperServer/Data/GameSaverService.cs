@@ -39,6 +39,13 @@ namespace CardFlipperServer.Data
             return new List<string>(fileDbSchema.GameSaves.Keys);
         }
 
+        public async Task<Dictionary<string, string>> GetHighScores()
+        {
+            await LoadFileDb();
+
+            return fileDbSchema.HighScores;
+        }
+
         public async Task StoreHighScore(string key, string score)
         {
             await LoadFileDb();
