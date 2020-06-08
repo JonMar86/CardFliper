@@ -1,0 +1,40 @@
+﻿@inject GameSaverService SaverService
+
+<div>
+    @if (gameSaves != null && gameSaves.Count > 0)
+    {
+        <h3>Continue previous game</h3>
+        foreach (var save in gameSaves)
+        {
+            string saveKey = save;
+            <div>
+                <button @onclick="() => LoadGame(saveKey)">@saveKey</button>
+            </div>
+        }
+    }
+
+</div>
+
+@code {
+    private IList<string> gameSaves;
+
+    [Parameter]
+    public Action<GameState> OnGameLoaded { get; set; }
+
+    private async Task LoadGame(string priorGame)
+    {
+        if (!string.IsNullOrEmpty(priorGame))
+        {
+            GameState state = await SaverService.RetrieveGameSave(priorGame);
+
+            this.OnGameLoaded?.Invoke(state);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        gameSaves = await SaverService.GetSaveGames();
+
+        await base.OnParametersSetAsync();
+    }
+}

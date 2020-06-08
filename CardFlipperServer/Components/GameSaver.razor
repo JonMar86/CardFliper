@@ -1,0 +1,28 @@
+﻿@using CardFlipperServer.Data
+@inject GameSaverService SaverService
+
+@if (this.CurrentGameState != null)
+{
+    <div>
+        <button class="btn newgamebtn" @onclick="StoreGameState"><h2>Save current game</h2></button>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public GameState CurrentGameState { get; set; }
+
+    [Parameter]
+    public Action OnFinishedSaving { get; set; }
+
+    private async Task StoreGameState()
+    {
+        if (this.CurrentGameState != null)
+        {
+            await SaverService.StoreGameSave(DateTime.Now.ToString(), CurrentGameState);
+
+            this.OnFinishedSaving?.Invoke();
+        }
+    }
+}
