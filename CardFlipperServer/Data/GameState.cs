@@ -9,7 +9,7 @@ namespace CardFlipperServer.Data
         public int Seed { get; set; }
 
         [JsonProperty]
-        public int Pairs { get; set; }
+        public int TotalCards { get; set; }
 
         [JsonProperty]
         public int[] MatchesFound { get; set; } = new int[0];
@@ -18,6 +18,6 @@ namespace CardFlipperServer.Data
         public int Mismatches { get; set; }
 
         [JsonIgnore]
-        public int MatchesLeft => this.Pairs - this.MatchesFound.Length;
+        public int MatchesLeft => this.TotalCards - this.MatchesFound.Length;
     }
 }

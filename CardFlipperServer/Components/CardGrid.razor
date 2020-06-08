@@ -23,7 +23,7 @@
 {
     <div class="game-score">
         <div>
-            <h3>Matched @this.CurrentGame.Pairs Pairs with @this.CurrentGame.Mismatches mismatched</h3>
+            <h3>Matched @this.CurrentGame.TotalCards cards with @this.CurrentGame.Mismatches mismatched</h3>
         </div>
 
         <GameRestarter OnRestarting="StartNewGame" />
@@ -60,7 +60,7 @@ else
 
     public string DynamicCss { get; set; } = string.Empty;
 
-    public string StateText { get; set; } = "Select pairs to match";
+    public string StateText { get; set; } = "Select your difficulty";
 
     public bool GameOn { get; set; } = false;
 
@@ -128,21 +128,21 @@ else
         base.StateHasChanged();
     }
 
-    private void GenerateCards(int pairs)
+    private void GenerateCards(int cards)
     {
-        if (this.CurrentGame == null)
+        if (this.CurrentGame == null || this.CurrentGame.TotalCards != cards)
         {
             this.CurrentGame = new GameState
             {
-                Pairs = pairs,
+                TotalCards = cards,
                 Seed = DateTime.Now.Millisecond,
             };
         }
 
-        var list = new List<string>(pairs);
+        var list = new List<string>(cards);
 
         char letter = 'A';
-        for (int i = 0; i < pairs / 2; i++)
+        for (int i = 0; i < cards; i += 2)
         {
             string display = letter.ToString();
 
@@ -154,14 +154,14 @@ else
 
         Scramble(list);
 
-        int square = (int)Math.Sqrt(list.Count);
+        int square = (int)Math.Sqrt(cards);
 
         this.RowCount = square;
         this.ColumnCount = square;
 
         this.TrackedCards = list;
 
-        this.MatchesLeft = pairs / 2;
+        this.MatchesLeft = cards;
         this.GameOn = true;
         base.StateHasChanged();
     }
@@ -186,7 +186,7 @@ else
         this.FoundMatches.Clear();
         this.MatchesLeft = -1;
         this.DynamicCss = string.Empty;
-        this.StateText = "Select pairs to match";
+        this.StateText = "Select your difficulty";
         this.GameOn = false;
         base.StateHasChanged();
     }
@@ -194,7 +194,7 @@ else
     private void LoadPriorGame(GameState state)
     {
         this.CurrentGame = state;
-        GenerateCards(state.Pairs);
+        GenerateCards(state.TotalCards);
 
         this.FoundMatches.AddRange(state.MatchesFound);
     }
