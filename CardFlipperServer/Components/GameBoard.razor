@@ -1,36 +1,42 @@
-﻿<div class="game-container container">    
-    @for (int r = 0; r < this.RowCount; r++)
-    {
-        <div class="row">
-            @for (int c = 0; c < this.ColumnCount; c++)
-            {
-                int index = (r * this.RowCount) + c;
-                <div class="@this.SimpleGridColClass">
-                    <CardDisplay DisplayedSide="@this.DisplayList[index]"
-                                 Index="@index"
-                                 IsFaceUp="@this.Grid.IsMatched(index)"
-                                 AllowedToFlipUp="this.Grid.IsAllowedToFlipCards"
-                                 OnFlippedUp="this.Grid.CheckForMatch" />
-                </div>
-            }
-        </div>
-    }
-</div>
+﻿@if (this.Cards != null && this.Cards.Count > 0)
+{
+    int index = 0;
+    <div class="game-container container">
+        @for (int r = 0; r < this.Cards.MaxRowColumn; r++)
+        {
+            <div class="row">
+                @for (int c = 0; c < this.Cards.MaxRowColumn; c++)
+                {
+                    if (index >= this.Cards.Count || c > this.Cards[index].ColumnIndex)
+                        break;
+
+                    <div class="@gridColCss">
+                        <CardDisplay Card="this.Cards[index++]"
+                                     AllowedToFlipUp="this.AllowedToFlipUp"
+                                     OnFlippedUp="this.OnFlippedUp" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
 
 @code {
     private int index = 0;
+    private string gridColCss;
 
     [Parameter]
-    public int RowCount { get; set; }
+    public CardLayout Cards { get; set; }
 
     [Parameter]
-    public int ColumnCount { get; set; }
+    public Func<bool> AllowedToFlipUp { get; set; }
 
     [Parameter]
-    public CardGrid Grid { get; set; }
+    public Func<CardData, Task> OnFlippedUp { get; set; }
 
-    [Parameter]
-    public IList<string> DisplayList { get; set; }
-
-    private string SimpleGridColClass => $"col-{12 / this.ColumnCount}";
+    protected override void OnParametersSet()
+    {
+        gridColCss = $"col-{(12 / this.Cards.MaxRowColumn)}";
+        base.OnParametersSet();
+    }
 }

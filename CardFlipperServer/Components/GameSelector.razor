@@ -1,12 +1,12 @@
 ﻿<div class="game-container container">
     <div class="row">
-        @foreach (var mode in PairsToMatch)
-        {
-            var m = mode;
-            <div class="col-3">
+        @for (int i = MinCards; i <= MaxCards; i++)
+        {        
+            var cards = i;
+            <div class="col-4">
                 <div class="gamecard-box">
                     <div class="gamecard-hidingside gamecard-inner">
-                        <span class="btn gamecard-text" @onclick="() => OnSelectionMade?.Invoke(m)">@mode</span>
+                        <span class="btn gamecard-text" @onclick="() => OnSelectionMade?.Invoke(cards, 1)">@i</span>
                     </div>
                 </div>
             </div>
@@ -16,12 +16,9 @@
 
 @code {
 
-    private readonly int[] PairsToMatch =
-    {
-        // Keeping it simple for now
-        4, 16, 36
-    };
+    private const int MinCards = 2;
+    private const int MaxCards = 9;
 
     [Parameter]
-    public Action<int> OnSelectionMade { get; set; }
+    public Action<int, int> OnSelectionMade { get; set; }
 }

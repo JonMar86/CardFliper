@@ -1,8 +1,9 @@
 ﻿@inject IJSRuntime JSRuntime
 @inject GameSaverService SaverService
+@inject CardsGenerator GeneratorService
 
 <h3>@this.StateText</h3>
-@if (this.GameOn && this.MatchesLeft > 0)
+@if (this.GameOn && this.CurrentGame.MatchesLeft > 0)
 {
     <h4>Mismatches: @this.CurrentGame.Mismatches</h4>
 }
@@ -11,11 +12,11 @@
 
     @if (this.GameOn)
     {
-        <GameBoard ColumnCount="this.ColumnCount" RowCount="this.RowCount" DisplayList="this.TrackedCards" Grid="this" />
+        <GameBoard Cards="this.TrackedCards" AllowedToFlipUp="this.IsAllowedToFlipCards" OnFlippedUp="this.CheckForMatch" />
     }
     else
     {
-        <GameSelector OnSelectionMade="GenerateCards" />
+        <GameSelector OnSelectionMade="StartNewGame" />
     }
 
 </div>
@@ -23,11 +24,11 @@
 @if (this.GameOn)
 {
     <div class="game-score">
-        <GameRestarter OnRestarting="StartNewGame" />
+        <GameRestarter OnRestarting="BackToGameSelection" />
 
-        @if (this.GameOn && this.MatchesLeft > 0)
+        @if (this.GameOn && this.CurrentGame.MatchesLeft > 0)
         {
-            <GameSaver CurrentGameState="this.CurrentGame" OnFinishedSaving="StartNewGame" />
+            <GameSaver CurrentGameState="this.CurrentGame" OnFinishedSaving="BackToGameSelection" />
         }
     </div>
 }
@@ -40,18 +41,12 @@ else
 {
     public const int SecondsToWaitOnMismatch = 3;
 
-    private CardDisplay lastCard = null;
+    private CardData lastCard = null;
     private string priorGame = null;
-
-    public int RowCount { get; set; } = -1;
-
-    public int ColumnCount { get; set; } = -1;
 
     public GameState CurrentGame { get; set; }
 
-    public IList<string> TrackedCards { get; set; }
-
-    public string SimpleGridColClass => $"col-{12 / this.ColumnCount}";
+    public CardLayout TrackedCards { get; set; }
 
     public bool IsWaiting { get; private set; } = false;
 
@@ -60,8 +55,6 @@ else
     public string StateText { get; set; } = "Select your difficulty";
 
     public bool GameOn { get; set; } = false;
-
-    public int MatchesLeft { get; set; } = -1;
 
     public List<int> FoundMatches { get; } = new List<int>();
 
@@ -75,7 +68,7 @@ else
         return !this.IsWaiting;
     }
 
-    public async Task CheckForMatch(CardDisplay card)
+    public async Task CheckForMatch(CardData card)
     {
         this.FoundMatches.Add(card.Index);
 
@@ -85,14 +78,13 @@ else
             lastCard = card;
             this.StateText = "Find the next match";
         }
-        else if (lastCard != card && lastCard.DisplayedSide == card.DisplayedSide)
+        else if (lastCard != card && lastCard.DisplayText == card.DisplayText)
         {
             // Match found
-            lastCard = null;
-            this.MatchesLeft--;
+            lastCard = null;            
             this.CurrentGame.MatchesFound = this.FoundMatches.ToArray();
 
-            if (this.MatchesLeft > 0)
+            if (this.CurrentGame.MatchesLeft > 0)
             {
                 this.StateText = "You found a match!";
             }
@@ -113,8 +105,13 @@ else
 
             this.IsWaiting = true;
             await Task.Delay(SecondsToWaitOnMismatch * 1000);
-            lastCard.FlipFaceDown();
-            card.FlipFaceDown();
+
+            lastCard.IsMatched = false;
+            lastCard.IsFaceUp = false;
+
+            card.IsMatched = false;
+            card.IsFaceUp = false;
+
             this.FoundMatches.Remove(card.Index);
             this.FoundMatches.Remove(lastCard.Index);
             lastCard = null;
@@ -126,63 +123,27 @@ else
         base.StateHasChanged();
     }
 
-    private void GenerateCards(int cards)
+    private void StartNewGame(int cards, int repeatsPerCard)
     {
         if (this.CurrentGame == null || this.CurrentGame.TotalCards != cards)
         {
+            this.TrackedCards = GeneratorService.GenerateCards(cards, repeatsPerCard);
             this.CurrentGame = new GameState
             {
-                TotalCards = cards,
-                Seed = DateTime.Now.Millisecond,
+                UniqueCards = cards,
+                RepeatsPerCard = repeatsPerCard,
+                Seed = this.TrackedCards.RngSeed,
             };
         }
 
-        var list = new List<string>(cards);
-
-        char letter = 'A';
-        for (int i = 0; i < cards; i += 2)
-        {
-            string display = letter.ToString();
-
-            // Add a pair
-            list.Add(display);
-            list.Add(display);
-            letter++;
-        }
-
-        Scramble(list);
-
-        int square = (int)Math.Sqrt(cards);
-
-        this.RowCount = square;
-        this.ColumnCount = square;
-
-        this.TrackedCards = list;
-
-        this.MatchesLeft = cards / 2;
         this.GameOn = true;
         base.StateHasChanged();
     }
 
-    private void Scramble(List<string> list)
-    {
-        var rng = new Random(this.CurrentGame.Seed);
-
-        int lastIndex = list.Count - 1;
-        for (int i = 0; i < list.Count; i++)
-        {
-            int randoIndex = rng.Next(0, lastIndex);
-            string temp = list[i];
-            list[i] = list[randoIndex];
-            list[randoIndex] = temp;
-        }
-    }
-
-    private void StartNewGame()
+    private void BackToGameSelection()
     {
         this.CurrentGame = null;
         this.FoundMatches.Clear();
-        this.MatchesLeft = -1;
         this.DynamicCss = string.Empty;
         this.StateText = "Select your difficulty";
         this.GameOn = false;
@@ -192,8 +153,9 @@ else
     private void LoadPriorGame(GameState state)
     {
         this.CurrentGame = state;
-        GenerateCards(state.TotalCards);
+        this.TrackedCards = GeneratorService.GenerateCards(state);
 
         this.FoundMatches.AddRange(state.MatchesFound);
+        base.StateHasChanged();
     }
 }

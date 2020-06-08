@@ -29,6 +29,7 @@ namespace CardFlipperServer
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<GameSaverService>();
+            services.AddSingleton<CardsGenerator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

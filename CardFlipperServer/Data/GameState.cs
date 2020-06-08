@@ -8,8 +8,14 @@ namespace CardFlipperServer.Data
         [JsonProperty]
         public int Seed { get; set; }
 
+        [JsonIgnore]
+        public int TotalCards => UniqueCards * 2 * RepeatsPerCard;
+
         [JsonProperty]
-        public int TotalCards { get; set; }
+        public int UniqueCards { get; set; }
+
+        [JsonProperty]
+        public int RepeatsPerCard { get; set; } = 1;
 
         [JsonProperty]
         public int[] MatchesFound { get; set; } = new int[0];
