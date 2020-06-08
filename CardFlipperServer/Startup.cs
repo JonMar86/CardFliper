@@ -28,7 +28,6 @@ namespace CardFlipperServer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<GameSaverService>();
         }
 
