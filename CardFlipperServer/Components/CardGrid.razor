@@ -1,6 +1,6 @@
 ﻿@inject IJSRuntime JSRuntime
-@inject GameSaverService SaverService
-@inject CardsGenerator GeneratorService
+@inject IGameSaverService SaverService
+@inject ICardsGenerator GeneratorService
 
 <h3>@this.StateText</h3>
 @if (this.GameOn && this.CurrentGame.MatchesLeft > 0)

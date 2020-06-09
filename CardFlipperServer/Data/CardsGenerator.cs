@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace CardFlipperServer.Data
 {
-    public class CardsGenerator
+    public class CardsGenerator : ICardsGenerator
     {
         public CardLayout GenerateCards(GameState priorGame)
         {
@@ -14,7 +13,7 @@ namespace CardFlipperServer.Data
         {
             int seed = GenerateRngSeed();
             return GenerateCards(uniqueCardLetters, repeatsPerLetter, seed);
-        }        
+        }
 
         public CardLayout GenerateCards(int uniqueCardLetters, int repeatsPerLetter, int rngSeed)
         {

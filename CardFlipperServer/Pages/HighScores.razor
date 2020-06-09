@@ -1,7 +1,7 @@
 ﻿@page "/HighScores"
 
 @using CardFlipperServer.Data
-@inject GameSaverService SaverService
+@inject IGameSaverService SaverService
 
 <h3>HighScores</h3>
 @if (scores != null && scores.Count > 0)
